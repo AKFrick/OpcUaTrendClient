@@ -15,30 +15,44 @@ namespace OpcUaTrendClient.Model
     {
         public OpcUaNode()
         {
-            Browse = new DelegateCommand(   () => BrowseNodes().Wait() );
-            Read = new DelegateCommand( () => ReadNode().Wait() );
+            Browse = new DelegateCommand(() => browseNodesCommand());
+            Read = new DelegateCommand(() => readNodeCommand());
+        }
+        public OpcUaNode(ObservableCollection<OpcUaNode> nodes, string name) : this()
+        {
+            Nodes = nodes;            
+            Name = name;
         }
         public string Name { get; set; }
         public NodeId Id { get; set; }
         public string Value { get; set; }
-        public ObservableCollection<OpcUaNode> Nodes { get { return _nodes; } set { _nodes = value; OnPropChng(nameof(Nodes)); } }
+        public ObservableCollection<OpcUaNode> Nodes { get { return _nodes; }
+            set {
+                _nodes = value; OnPropChng(nameof(Nodes));
+                foreach (var node in _nodes)
+                {
+                    node.ReadNode += (a) => ReadNode(a);
+                }
+            } }
         private ObservableCollection<OpcUaNode> _nodes;
+
+        public Action<string> ReadNode;
+        public Action<OpcUaNode> BrowseNodes;
 
         public bool IsNodeExpanded { get; set; } = true;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public OpcUaNode ParentNode { get; set; }
         public DelegateCommand Browse { get; private set; }
         public DelegateCommand Read { get; private set; }
-        private async Task ReadNode()
+        private void readNodeCommand()
         {
-            Value = await OpcUa.GetInstance().ReadNode(Id);
+            ReadNode?.Invoke(Name);
+            //Value = await OpcUa.GetInstance().ReadNode(Id);
         }
-        private async Task BrowseNodes()
+        private void browseNodesCommand()
         {
-            Log.That($"{Name} browsing {Id.ToString()}");
-            Nodes = new ObservableCollection<OpcUaNode>( await OpcUa.GetInstance().Browse(Id)   );
-
+            BrowseNodes?.Invoke(this);
         }
         private void OnPropChng(string propName)
         {

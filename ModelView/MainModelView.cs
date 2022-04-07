@@ -22,15 +22,34 @@ namespace OpcUaTrendClient.ModelView
         private async Task connect()
         {
             await OpcUa.GetInstance().Connect(Endpoint);
-            Nodes = new ObservableCollection<OpcUaNode>(await OpcUa.GetInstance().Browse(ObjectIds.ObjectsFolder));            
+            RootNode = new OpcUaNode(await OpcUa.GetInstance().Browse(ObjectIds.ObjectsFolder), "Root");
+            RootNode.ReadNode += ReadNode;
+            RootNode.BrowseNodes += BrowseNodes;
+
+            Nodes = RootNode.Nodes;
             RaisePropertyChanged(nameof(Nodes));
         }
 
         public Log MyLog => Log.GetInstance();
         public string Endpoint { get; set; } = "opc.tcp://10.10.10.98:4840/";
         public DelegateCommand Connect { get; private set; }
+        public OpcUaNode RootNode { get; private set; }
         public ObservableCollection<OpcUaNode> Nodes { get; private set; }
         public OpcUaNode SelectedNode { get; set; }
+        public void ReadNode(string Id)
+        {
+            Log.That($"Btn of {Id.ToString()}");
+        }
+        public async void BrowseNodes(OpcUaNode node)
+        {
+            Log.That($"{node.Name} browsing {node.Id.ToString()}");
+            node.Nodes = new ObservableCollection<OpcUaNode>(await OpcUa.GetInstance().Browse(node.Id));
+        }
+
+        public static class NodeReadModelView
+        {
+
+        }
 
     }
 }
