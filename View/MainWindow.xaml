@@ -8,21 +8,17 @@
         xmlns:view="clr-namespace:OpcUaTrendClient.View"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" x:Class="OpcUaTrendClient.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1200">
+        Title="MainWindow" Height="550" Width="1200">
     <Window.DataContext>
         <modelView:MainModelView/>
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="600"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="150"/>
         </Grid.RowDefinitions>
-
-        <view:LogView Grid.Row="2"/>
-        <TreeView Grid.Row="1">
-           
-        </TreeView>
+                
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -31,7 +27,10 @@
             <TextBox Grid.Column="0" TextWrapping="Wrap" Margin="5" Width="Auto" Height="25" VerticalAlignment="Center" Text="{Binding Endpoint}"/>
             <Button Command="{Binding Connect}"  Grid.Column="1" Content="Подключиться" Margin="5" Height="25" Width="120"/>
         </Grid>
-        
+
+        <view:NodeTreeView Grid.Row="1"/>
+
+        <view:LogView Grid.Row="2"/>
 
     </Grid>
 </Window>

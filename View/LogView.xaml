@@ -23,12 +23,13 @@
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   AutoGenerateColumns="False"
-                  FontSize="16"
-                  MinRowHeight="35"     
+                  FontSize="12"
+                       
                   HorizontalContentAlignment="Center"
                   VerticalContentAlignment="Center"                  
                   ItemsSource="{Binding MyLog.LogItems}"
                   IsSynchronizedWithCurrentItem="False"
+                  HeadersVisibility="None"
                   >
 
             <DataGrid.ColumnHeaderStyle>
