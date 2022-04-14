@@ -10,12 +10,13 @@ namespace OpcUaTrendClient.Model
     public class Log
     {
         private static Log instance;
-
+        private static readonly Lazy<Log> lazy = new Lazy<Log>(() => new Log());
         public static Log GetInstance()
         {
-            if(instance == null)
-                instance = new Log();
-            return instance;
+            return lazy.Value;
+            //if(instance == null)
+            //    instance = new Log();
+            //return instance;
         }
         private Log()
         {

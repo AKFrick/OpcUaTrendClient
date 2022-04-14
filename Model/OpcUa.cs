@@ -4,6 +4,7 @@ using Opc.Ua.Configuration;
 using System;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 
 namespace OpcUaTrendClient.Model
 {
@@ -18,7 +19,7 @@ namespace OpcUaTrendClient.Model
         private static OpcUa instance;
         public static OpcUa GetInstance()
         {
-            if(instance == null)
+            if (instance == null)
                 instance = new OpcUa();
             return instance;
         }
@@ -58,9 +59,9 @@ namespace OpcUaTrendClient.Model
             Log.That(session.ReadValue(new NodeId("ns=3;s=\"DB_X\".\"X\"")).ToString());
 
         }
-        public async Task<string> ReadNode(NodeId nodeId)
+        public async Task<DataValue> ReadNode(NodeId nodeId)
         {
-            return session.ReadValue(nodeId).ToString();
+            return session.ReadValue(nodeId);
         }
         public async Task<ObservableCollection<OpcUaNode>> Browse(NodeId nodeId)
         {
@@ -78,8 +79,37 @@ namespace OpcUaTrendClient.Model
             foreach (var rd in references)
             {
                 nodes.Add(new OpcUaNode { Name = $"{rd.DisplayName} + {rd.NodeClass}", Id = ExpandedNodeId.ToNodeId(rd.NodeId, session.NamespaceUris) });
-            }            
+            }
             return nodes;
         }
+        Subscription subscription;
+        public void Subscribe(NodeId node, Action<DataValue> action)
+        {
+            //Log.That("Create sub");
+            ValueUpdated += action;
+            subscription = new Subscription(session.DefaultSubscription);
+
+            var list = new List<MonitoredItem> {
+                new MonitoredItem(subscription.DefaultItem) { DisplayName = "Speed", StartNodeId = node},
+            };
+
+            list.ForEach(i => i.Notification += OnNotification);
+            subscription.AddItems(list);
+            //list.ForEach(i => Log.That(i.Subscription.Id.ToString()));
+            subscription.PublishingEnabled = true;
+
+            session.AddSubscription(subscription);
+            subscription.Create();
+        }
+
+        public Action<DataValue> ValueUpdated;
+        private static void OnNotification(MonitoredItem item, MonitoredItemNotificationEventArgs e)
+        {
+            foreach (var value in item.DequeueValues())
+            {
+                Log.That($"NewValue: {value.Value}");
+            }
+        }
+
     }
 }

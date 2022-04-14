@@ -16,6 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="150"/>
         </Grid.RowDefinitions>
                 
@@ -29,8 +30,10 @@
         </Grid>
 
         <view:NodeTreeView Grid.Row="1"/>
-
-        <view:LogView Grid.Row="2"/>
+        
+        <view:ReadValueView Grid.Row="2"/>
+        
+        <view:LogView Grid.Row="3"/>
 
     </Grid>
 </Window>

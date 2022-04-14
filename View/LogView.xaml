@@ -27,7 +27,7 @@
                        
                   HorizontalContentAlignment="Center"
                   VerticalContentAlignment="Center"                  
-                  ItemsSource="{Binding MyLog.LogItems}"
+                  ItemsSource="{Binding LogItems}"
                   IsSynchronizedWithCurrentItem="False"
                   HeadersVisibility="None"
                   >
