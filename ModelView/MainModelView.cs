@@ -17,11 +17,7 @@ namespace OpcUaTrendClient.ModelView
     {        
         public MainModelView()
         {
-            Connect = new DelegateCommand(() => connect().Wait());
-            ReadSelectedNode = new DelegateCommand(() => ReadNode(selectedNodeId));
-
-            SubscribeSelectedNode = new DelegateCommand(() => OpcUa.GetInstance().Subscribe(selectedNodeId, NodeValueUpdated)   );
-
+            #region LOG
             LogItems = new ObservableCollection<Log.LogItem>(Log.GetInstance().LogItems);
             ((INotifyCollectionChanged)Log.GetInstance().LogItems).CollectionChanged += (s, a) =>
             {
@@ -29,7 +25,7 @@ namespace OpcUaTrendClient.ModelView
                     Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         foreach (Log.LogItem item in a.NewItems)
-                            LogItems.Add(item);
+                            LogItems.Insert(0, item);
                     }));
                 if (a.OldItems?.Count >= 1)
                     Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -38,7 +34,12 @@ namespace OpcUaTrendClient.ModelView
                             LogItems.Remove(item);
                     }));
             };
+            #endregion
 
+            Connect = new DelegateCommand(() => connect().Wait());
+            ReadSelectedNode = new DelegateCommand(() => ReadNode(SelectedNode));
+
+            SubscribeSelectedNode = new DelegateCommand(() => SubscribeNode(SelectedNode)  );
         }
 
         private async Task connect()
@@ -58,32 +59,25 @@ namespace OpcUaTrendClient.ModelView
         public OpcUaNode RootNode { get; private set; }
         public ObservableCollection<OpcUaNode> Nodes { get; private set; }
         public OpcUaNode SelectedNode { get; set; }
-        public async void ReadNode(NodeId Id)
+        public async void ReadNode(OpcUaNode node)
         {
-            Log.That($"Reading {Id.ToString()}...");
-            selectedNodeId = Id;
-            RaisePropertyChanged(nameof(SelectedNodeId));
-            selectedNodeValue = await OpcUa.GetInstance().ReadNode(selectedNodeId);            
-            RaisePropertyChanged(nameof(SelectedNodeValue));
+            Log.That($"Reading {node.Id}...");
+            SelectedNode = node;
+            node.UpdateValue( await OpcUa.GetInstance().ReadNode(node.Id));
+            Log.That(node.Value.ToString());
+            RaisePropertyChanged(nameof(SelectedNode));
         }
         public async void BrowseNodes(OpcUaNode node)
         {
-            Log.That($"{node.Name} browsing {node.Id.ToString()}");
+            Log.That($"{node.Name} browsing {node.Id}");
             node.Nodes = new ObservableCollection<OpcUaNode>(await OpcUa.GetInstance().Browse(node.Id));
         }
-
+        public void SubscribeNode(OpcUaNode node)
+        {
+            OpcUa.GetInstance().Subscribe(node);
+            node.PropertyChanged += ( (s, e) => RaisePropertyChanged(nameof(SelectedNode)));
+        }
         public DelegateCommand ReadSelectedNode { get; private set; }
         public DelegateCommand SubscribeSelectedNode { get; private set; }
-        public string SelectedNodeValue { get { return selectedNodeValue.ToString(); } private set { } }
-        DataValue selectedNodeValue = new DataValue();
-        public string SelectedNodeId { get { return selectedNodeId.ToString(); } private set { } }
-        NodeId selectedNodeId = new NodeId("ns=3;s=\"DB_X\".\"X\"");
-
-        public void NodeValueUpdated(DataValue value)
-        {
-            
-        }
-
     }
 }
-

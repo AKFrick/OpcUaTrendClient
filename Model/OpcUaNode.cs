@@ -25,7 +25,7 @@ namespace OpcUaTrendClient.Model
         }
         public string Name { get; set; }
         public NodeId Id { get; set; }
-        public string Value { get; set; }
+        public DataValue Value { get; set; }
         public ObservableCollection<OpcUaNode> Nodes { get { return _nodes; }
             set {
                 _nodes = value; OnPropChng(nameof(Nodes));
@@ -37,7 +37,7 @@ namespace OpcUaTrendClient.Model
             } }
         private ObservableCollection<OpcUaNode> _nodes;
 
-        public Action<NodeId> ReadNode;
+        public Action<OpcUaNode> ReadNode;
         public Action<OpcUaNode> BrowseNodes;
 
         public bool IsNodeExpanded { get; set; } = true;
@@ -48,7 +48,7 @@ namespace OpcUaTrendClient.Model
         public DelegateCommand Read { get; private set; }
         private void readNodeCommand()
         {
-            ReadNode?.Invoke(Id);
+            ReadNode?.Invoke(this);
         }
         private void browseNodesCommand()
         {
@@ -60,7 +60,12 @@ namespace OpcUaTrendClient.Model
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
-        }        
+        }
+        public void UpdateValue(DataValue value)
+        {
+            Value = value;
+            OnPropChng(value.ToString());
+        }
     }
 }
   

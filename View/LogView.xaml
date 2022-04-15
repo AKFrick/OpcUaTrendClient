@@ -23,8 +23,7 @@
                   SelectionMode="Single"
                   SelectionUnit="FullRow"
                   AutoGenerateColumns="False"
-                  FontSize="12"
-                       
+                  FontSize="12"                  
                   HorizontalContentAlignment="Center"
                   VerticalContentAlignment="Center"                  
                   ItemsSource="{Binding LogItems}"
